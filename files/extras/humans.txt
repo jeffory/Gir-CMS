@@ -1,0 +1,17 @@
+/* the humans responsible & colophon */
+/* humanstxt.org */
+
+
+/* TEAM */
+  Chef: Keith McGahey
+  Site: http://k3f.info
+  Location: Brisbane, Australia
+
+/* THANKS */
+  Name: http://htmlboilerplate.com
+  Name: http://lxgshaka.deviantart.com/art/Gir-from-Invader-Zim-91039201
+
+/* SITE */
+  Standards: HTML5, CSS3
+  Components: Modernizr, jQuery
+  Software: e-texteditor
