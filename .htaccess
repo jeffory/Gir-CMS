@@ -15,8 +15,15 @@
 ### github.com/paulirish/html5-boilerplate-server-configs
 ###
 
+# ----------------------------------------------------------------------
+# Start rewrite engine
+# ----------------------------------------------------------------------
 
-RewriteBase /gircms/
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /gircms/
+</IfModule>
+
 
 # ----------------------------------------------------------------------
 # Better website experience for IE users
@@ -272,17 +279,6 @@ FileETag None
 #   </Location>
 # </IfModule>
 
-
-
-# ----------------------------------------------------------------------
-# Start rewrite engine
-# ----------------------------------------------------------------------
-
-# Turning on the rewrite engine is necessary for the following rules and features.
-
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-</IfModule>
 
 
 

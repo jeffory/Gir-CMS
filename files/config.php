@@ -1,6 +1,4 @@
 <?php
-	// Yeah our config, this might look messy, but only to you... :P
-	
 	class cmsConfig
 	{
 		var $siteTitle = 'Gir CMS';
