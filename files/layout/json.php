@@ -5,8 +5,8 @@
 	header('Content-type: application/json');
 
 	$page = array(
-			'title' => $siteTitle,
-			'content' => $pageContent
+			'title' => $cms->siteTitle,
+			'content' => $cms->renderContent($pageContent),
 		);
 	
 	echo json_encode($page);

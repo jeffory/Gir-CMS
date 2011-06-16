@@ -1,31 +1,48 @@
 <?php
-	require('sanitizer.php');
-	require('markdown.php');
-	require('smartypants.php');
+	require('shared/markdown.php');
+	require('shared/smartypants.php');
 	
-	require('../files/config.php');
+	require('files/config.php');
 	
 	class cms extends cmsConfig
 	{
 		var $pages = array();
+		var $debugInfo;
+		
+		var $url;
+		var $pageRequest;
+		
 		
 		function __construct()
 		{
-			chdir('..');
+			$this->addDebug(getcwd());
 			
 			if (isset($cms->defaultTimezone))
-			{
 				@date_default_timezone_set($cms->defaultTimezone);
-			}
 			
-			// Check the config
-			if (!is_dir(realpath($this->pagesDirectory)))
+			// Check the pages directory
+			if (is_dir(realpath($this->pagesDirectory)))
 			{
-				$this->handleError("Page directory '{$this->pagesDirectory}' not found, CMS can't continue.", 2);
+				$this->pagesDirectory = realpath($this->pagesDirectory);
 			}
 			else
 			{
-				$this->pagesDirectory = realpath($this->pagesDirectory);
+				$this->handleError("Page directory '{$this->pagesDirectory}' not found, CMS can't continue.", 2);
+			}
+			
+			// Check the log file
+			if (is_writable($this->logFile) || is_writable(dirname($this->logFile)))
+			{
+				if (!file_exists($this->logFile))
+				{
+					$fh = fopen($this->logFile, 'w');
+					fwrite($fh, "# Gir CMS error log\n\n");
+					fclose($fh);
+				}
+			}
+			else
+			{
+				$this->handleError("Log file '{$this->logFile}' is not writable, CMS can't continue.", 2);
 			}
 			
 			// Check the cache settings
@@ -33,25 +50,32 @@
 			{
 				$this->cacheDir = sys_get_temp_dir();
 			}
-			elseif($this->cacheEnabled === true && !is_dir(realpath($this->cacheDir)))
+			elseif($this->cacheEnabled === true && is_dir(realpath($this->cacheDir)))
+			{
+				$this->cacheDir = realpath($this->cacheDir);
+			}
+			elseif ($this->cacheEnabled === true)
 			{
 				$this->handleError("Cache folder \"{$this->cacheDir}\" doesn't exist, check 'cacheDir' setting.", 0);
 				$this->cacheDir = sys_get_temp_dir();
 			}
-			elseif ($this->cacheEnabled === true)
-			{
-				$this->cacheDir = realpath($this->cacheDir);
-			}
 			
 			// Initilize
 			$this->listPages($this->pagesDirectory);
+			
+			// Load additional helpers
+			foreach ($this->loadHelpers as $file => $varName)
+			{
+				include $file. '.php';
+				$varName = $file;
+			}
 		}
 		
 		function listPages($pagesDirectory)
 		{
-			foreach (scandir($pagesDirectory) as $pageFile) {
-				
-				if ($this->checkPage($pageFile) && $pageFile !== '.' && $pageFile !== '..')
+			foreach (scandir($pagesDirectory) as $pageFile)
+			{
+				if ($this->checkPage($pageFile) && !(substr(basename($pageFile), 0, 1) == '.'))
 				{
 					if (is_dir($pagesDirectory. $pageFile))
 					{
@@ -143,9 +167,9 @@
 				}
 				else
 				{
-					if (isset($this->pages['-404']))
+					if (isset($this->pages['404']))
 					{
-						return $this->renderPage('-404');
+						return $this->renderPage('404');
 					}
 					else
 					{
@@ -158,22 +182,24 @@
 		
 		function renderContent($content)
 		{
-			$markdownParser = new MarkdownExtra_Parser;
-			$htmlSanitizer = new HTML_Sanitizer;
+			@$renderer = $this->templates[$this->url['ext']]['renderer'];
 			
-			$renderFixes = array(
-						'/^(#+)/m' => '$1#',	// Take the headings down a step, H1 is the main website heading :)
-						'/<(\/|)s>/m' => '<$1del>',
-					);
-			
-			foreach ($renderFixes as $pattern => $replacement)
+			if (isset($renderer) && @in_array($renderer, array_keys($this->renderers)))
 			{
-				$content = preg_replace($pattern, $replacement, $content);
+				if (file_exists('lib/'. $this->renderers[$renderer]['file']))
+				{
+					// TODO: Implement renderers, class is loading, nothing else however.
+					include('lib/'. $this->renderers[$renderer]['file']);
+				}
+				else
+				{
+					return $this->handleError("Renderer \"{$renderer}\" couldn't be found, check the config", 2);
+				}
 			}
-				
-			$content = $markdownParser->transform($content);
-			$content = $htmlSanitizer->sanitize($content);
-			$content = SmartyPants($content);
+			else
+			{
+				return $this->handleError("Renderer \"{$renderer}\" is invalid, check the config", 2);
+			}
 			
 			return $content;
 		}
@@ -202,42 +228,34 @@
 		{
 			if (!isset($_GET['url']))
 			{
-				$ret['slug'] = 'index';
-				$ret['ext'] = 'html';
+				$this->url['slug'] = 'index';
+				$this->url['ext'] = 'html';
 			}
 			else
 			{
 				preg_match_all('/(.*?)(\.|\/|$)(.*?)/is', $url, $matches);
+				$this->url['slug'] = $matches[1][0];
 				
-				$ret['slug'] = $matches[1][0];
 				if (isset($this->templates[$matches[1][1]])) {
-					$ret['ext'] = $matches[1][1];
+					$this->url['ext'] = $matches[1][1];
 				}
 				else
 				{
-					$ret['ext'] = 'html';
+					$this->url['ext'] = 'html';
 				}
 			}
 			
-			if ($ret['ext'] == 'html')
-			{
-				$this->url = $ret['slug'];
-			} else {
-				$this->url = $ret['slug']. '.'. $ret['ext'];
-			}
-			
-			return $ret;
+			return $this->url;
 		}
 		
 		function handleError($message, $errorLevel = 0)
 		{
 			// $errorLevel,
-			// 0: A warning, log to file, don't display.
-			// 1: An error, display it to the user, however don't halt the script.
-			// 2: Fatal error, halt the script.
+			// 0 - A warning: log to file, don't display.
+			// 1 - An error: display it to the user, however don't halt the script.
+			// 2 - Fatal error: halt the script.
 			
-			$logFile = "files/errors.log";
-			$fh = fopen($logFile, 'a');
+			$fh = fopen($this->logFile, 'a');
 			
 			switch ($errorLevel) {
 				case 0:
@@ -274,5 +292,27 @@
 			return !empty($_SERVER['HTTP_CLIENT_IP']) ? $_SERVER['HTTP_CLIENT_IP'] : 
 				!empty($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : 
 					$_SERVER['REMOTE_ADDR'];
+		}
+		
+		function addDebug($line)
+		{
+			$this->debugInfo .= $line. "<br>";
+		}
+		
+		function printDebug()
+		{
+			echo "<span class='big'><strong>Debug</strong></span><br><br>";
+			echo $this->debugInfo. '<br><br>';
+			echo '<strong>Files loaded:</strong>'. '<br><br>';
+			
+			echo '<ul>';
+			
+			foreach (get_included_files() as $file)
+			{
+				echo '<li>'. str_replace(getcwd(). DS, '', $file). '</li>';
+			}
+			
+			echo '</ul><br>';
+			htmlentities(print_r($this));
 		}
 	}

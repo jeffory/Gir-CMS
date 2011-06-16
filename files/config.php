@@ -5,7 +5,12 @@
 		
 		var $siteURL = 'http://localhost/gircms/';
 		
+		var $debug = true;
+		
+		// Useful if the server is located elsewhere, mainly used for logging.
 		var $defaultTimezone = 'Australia/Brisbane';
+		
+		var $logFile = 'files/errors.log';
 		
 		// Where the pages are stored.
 		var $pagesDirectory = 'files/pages';
@@ -17,35 +22,44 @@
 		var $pageBlacklist = array();
 		
 		// Where the dynamic (php) pages are stored.
-		var $dynamicDirectory = 'snips';
+		var $dynamicDirectory = 'files/snips';
 		
 		var $dynamicPages = array(
 			'setup'
 			);
 		
-		// A list of tags that we will allow to be used in content.
-		var $allowedTags =  '<a><br><b><h1><h2><h3><strong><u><em><small><big><i><img><li>
-			<ol><ul><p><dd><dt><dl><del><pre><br><blockquote><code><abbr><acronym><cite>
-			<dfn><q><sup><sub><kbd><samp><var><hr><table><tr><td><th><thead><tbody><tfoot>';
+		var $pagesExtension = 'md';
 		
-		var $pagesExtension = 'txt';
-		
-		var $cacheEnabled = true;
+		var $cacheEnabled = false;
 		
 		var $cacheDir = 'cache';
 		
-		var $layoutDir = 'layout';
+		var $layoutDir = 'files/layout';
+		
+		var $loadHelpers = array(
+			'HTML_Helper' => 'html_helper'
+			);
+		
+		var $renderers = array(
+			'markdown' => array(
+				'class' => 'Markdown',
+				'file' => 'markdown.php'
+				),
+			);
 		
 		var $templates = array(
 			'html' => array(
-				'template' => 'default.php',
+				'template' => 'html.php',
 				'content-type' => 'text/html',
-				'markdown' => true
+				'renderer' => 'markdown'
 				),
 			'txt' => array(
 				'template' => 'txt.php',
 				'content-type' => 'text/plain'
+				),
+			'json' => array(
+				'template' => 'json.php',
+				'content-type' => 'application/json'
 				)
 			);
 	}
-?>

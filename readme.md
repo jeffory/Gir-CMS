@@ -16,6 +16,6 @@ are writable.
 
 2. Set up the **files/config.php** file.
 
-3. Check/Change RewriteBase in the root **.htaccess** file.
+3. Check/change RewriteBase in the root **.htaccess** file.
 
 [html5boilerplate]: http://html5boilerplate.com

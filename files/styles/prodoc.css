@@ -3,10 +3,12 @@ body {
 	font-size: 12pt;
 	padding: 4em 6em;
 	line-height: 1.2em;
-	background: url('../images/prodoc-tile.jpg');
+	background: url('../images/style/prodoc-tile.jpg');
 }
 div#container {
 	background-color: white;
+	margin: 0 auto;
+	max-width: 900px;
 	padding: 2em 3.2em;
 	padding-bottom: 2.5em;
 }
@@ -101,6 +103,14 @@ table tr:hover {
 }
 img {
 	max-width: 100%;
+}
+div#debug {
+	margin-top: 50px;
+	border: 1px solid gray;
+	white-space: pre;
+	overflow: auto;
+	padding: 1em 2em;
+	background-color: #D8E7F2;
 }
 /* Handhelds/Mobiles */
 @media only handheld, only screen and (max-width: 800px)
