@@ -1,0 +1,13 @@
+#debug {
+	font-family: Consolas;
+	margin-top: 30px;
+	border: 1px solid #F7A3A3;
+	background-color: #F7D0D0;
+	white-space: pre;
+	padding: 1em 2em;
+}
+#debug h2 {
+	margin-top: 0;
+	margin-bottom: .5em;
+	border: 0;
+}

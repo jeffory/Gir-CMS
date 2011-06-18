@@ -1,0 +1,3 @@
+# Welcome
+
+This is Gir CMS, a very light-weight and easy to use CMS by [c0d.in](http://c0d.in)

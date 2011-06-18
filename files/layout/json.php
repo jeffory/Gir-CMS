@@ -1,12 +1,16 @@
 <?php
-	// header('Cache-Control: no-cache, must-revalidate');
-	// header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+/**
+ * JSON template
+ *
+ * Simple JSON format.
+ *
+ * @package Gir-CMS
+ * @author Jeffory <jeffory@c0d.in>
+ **/
 
-	header('Content-type: application/json');
+$page = array(
+		'title' => $siteTitle,
+		'content' => $pageContent
+	);
 
-	$page = array(
-			'title' => $siteTitle,
-			'content' => $pageContent
-		);
-	
-	echo json_encode($page);
+echo json_encode($page);
