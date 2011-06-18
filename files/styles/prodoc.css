@@ -1,0 +1,123 @@
+body {
+	font-family: 'PT Serif', Georgia;
+	font-size: 12pt;
+	padding: 4em 6em;
+	line-height: 1.2em;
+	background: url('../images/prodoc-tile.jpg');
+}
+div#container {
+	background-color: white;
+	padding: 2em 3.2em;
+	padding-bottom: 2.5em;
+}
+h1, h2, h3 {
+	font-family: 'Amaranth', Georgia;
+	color: #333333;
+	padding-bottom: .1em;
+	margin-bottom: .7em;
+}
+h1 {
+	font-size: 3em;
+	font-weight: bold;
+	margin-bottom: .8em;
+	line-height: 1em;
+}
+h2 {
+	font-size: 2.2em;
+	font-weight: bold;
+	padding-top: .5em;
+	padding-bottom: .2em;
+	border-bottom: 1px solid #DADADA;
+}
+h3 {
+	font-size: 1.1em;
+}
+p, ul {
+	margin-bottom: .8em;
+}
+ul {
+	margin-top: .1em;
+	padding-left: 1.8em;
+}
+ul li {
+	list-style: square inside;
+}
+a {
+	color: #0088CC;
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+}
+a img {
+	border: 6px solid #DADADA;
+}
+a img:hover {
+	border: 6px solid #0088CC;
+}
+footer {
+	margin-top: 3em;
+	font-size: .8em;
+	text-align: center;
+	color: #999999;
+}
+label {
+	display: block;
+}
+form input[type='text'] {
+	width: 200px;
+}
+form input[type='submit'] {
+	padding: .2em .6em;
+}
+form textarea {
+	max-width: 100%;
+}
+pre {
+	background: #D1D1D1;
+	padding: 4px 6px;
+}
+pre, code {
+	font-family: Consolas, "Vera Sans Mono", Monaco, "Courier New";
+	overflow: auto;
+}
+table {
+	border-spacing: 0;
+	width: 100%;
+}
+table tr th {
+	background: #999;
+	color: white;
+	text-align: left;
+}
+table th, table td {
+	padding: 4px 10px 4px 5px;
+}
+tr:nth-child(even) {
+	background-color: #E0E0E0;
+}
+table tr:hover {
+	background-color: #D1F4FF;
+}
+img {
+	max-width: 100%;
+}
+/* Handhelds/Mobiles */
+@media only handheld, only screen and (max-width: 800px)
+	{
+		body {
+			margin:0;
+			padding:0;
+			font-size: 10pt;
+		}
+		div#container {
+			padding: 1em 2em;
+		}
+		h1 {
+			font-size: 2.6em;
+			text-align: center;
+		}
+		ul {
+			padding-left: 1.3em;
+		}
+	}
