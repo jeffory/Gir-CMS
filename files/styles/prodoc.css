@@ -3,7 +3,7 @@ body {
 	font-size: 12pt;
 	padding: 4em 6em;
 	line-height: 1.2em;
-	background: url('../images/prodoc-tile.jpg');
+	background: url('../images/style/prodoc-tile.jpg');
 }
 div#container {
 	background-color: white;

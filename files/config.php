@@ -12,6 +12,8 @@ class cmsConfig
 	
 	var $siteURL = 'http://localhost/gircms/';
 	
+	var $debug = true;
+	
 	var $defaultTimezone = 'Australia/Brisbane';
 	
 	var $dbConfig = array(
@@ -23,16 +25,14 @@ class cmsConfig
 			);
 	
 	// Where the pages are stored.
-	var $pagesDirectory = 'files/pages';
+	var $pagesDir = 'files/pages';
 	
 	var $pagesExtension = 'txt';
 	
 	// Where the dynamic (php) pages are stored.
-	var $dynamicDirectory = 'files/snips';
+	var $dynamicDir = 'files/snips';
 	
 	var $dynamicPages = array();
-	
-	var $debug = true;
 	
 	var $cacheEnabled = true;
 	

@@ -31,13 +31,13 @@ class CMSCore extends cmsConfig
 		}
 		
 		// Check the pages directory is avaliable
-		if (is_dir(realpath($this->pagesDirectory)))
+		if (is_dir(realpath($this->pagesDir)))
 		{
-			$this->pagesDirectory = realpath($this->pagesDirectory);
+			$this->pagesDir = realpath($this->pagesDir);
 		}
 		else
 		{
-			$this->handleError("Page directory '{$this->pagesDirectory}' not found, CMS can't continue.", 2);
+			$this->handleError("Page directory '{$this->pagesDir}' not found, CMS can't continue.", 2);
 		}
 		
 		// Check the cache settings
@@ -69,14 +69,13 @@ class CMSCore extends cmsConfig
 		}
 	}
 	
-	
 	/**
 	 * Load the class and return it.
 	 * 
 	 * @return object	newly loaded class
-	 * @access private
+	 * @access public
 	 **/
-	private function loadClass($className, $classFile = null)
+	public function loadClass($className, $classFile = null)
 	{
 		if (!isset($classFile))
 			$classFile = 'lib/'. $this->underscore($className). '.php';
@@ -108,6 +107,7 @@ class CMSCore extends cmsConfig
 	 * renderPage
 	 *
 	 * @return string	rendered content
+	 * @access public
 	 **/
 	public function renderPage($slug = '', $parseMarkdown = true)
 	{
@@ -182,10 +182,11 @@ class CMSCore extends cmsConfig
 	 * Run a PHP snippet and return the result
 	 *
 	 * @return string	rendered/eval'd code
+	 * @access public
 	 **/
-	function renderPagePart($partName)
+	public function renderPagePart($partName)
 	{
-		$file = $this->dynamicDirectory. DS. $partName. '.php';
+		$file = $this->dynamicDir. DS. $partName. '.php';
 		
 		if (file_exists($file))
 		{

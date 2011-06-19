@@ -14,13 +14,12 @@ require('shared/smartypants.php');
 class MarkdownRenderer
 {	
 	/**
-	 * renderContent
-	 * Renders content with Markdown Extra and Smartypants.
+	 * Renders content using both Markdown Extra and Smartypants.
 	 *
 	 * @return string	rendered content
+	 * @access public
 	 **/
-	
-	function renderContent($content)
+	public function renderContent($content)
 	{
 		$markdownParser = new MarkdownExtra_Parser;
 		

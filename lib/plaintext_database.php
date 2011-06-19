@@ -20,12 +20,11 @@ class PlaintextDatabase
 	var $options = array();
 	
 	/**
-	 * listPages
-	 *
 	 * Returns an array with the pages and their properties.
 	 *
 	 * @param string $pagesDirectory 
 	 * @return array
+	 * @access public
 	 **/
 	public function listPages($pagesDirectory)
 	{
@@ -40,7 +39,7 @@ class PlaintextDatabase
 				else
 				{
 					$pageSlug = $this->getPageSlug($pageFile);
-				
+					
 					$this->pages[$pageSlug]['title'] = $this->getPageTitle($pageFile);
 					$this->pages[$pageSlug]['file'] = $pagesDirectory. DS. $pageFile;
 					$this->pages[$pageSlug]['public'] = $this->isPublic($pagesDirectory. DS. $pageFile);
@@ -51,6 +50,13 @@ class PlaintextDatabase
 		return $this->pages;
 	}
 	
+	/**
+	 * Returns a page slug from a filename.
+	 *
+	 * @param string	filename
+	 * @return string	slug
+	 * @access public
+	 **/
 	public function getPageSlug($filename)
 	{
 		// Replace anything that isn't text/numbers into dashes
