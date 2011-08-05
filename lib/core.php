@@ -289,7 +289,6 @@ class CMSCore extends cmsConfig
 	public function handleError($message, $errorLevel = 0)
 	{
 		$logFile = "files/errors.log";
-		$fh = fopen($logFile, 'a');
 		
 		switch ($errorLevel) {
 			case 0:
@@ -305,9 +304,16 @@ class CMSCore extends cmsConfig
 			break;
 		}
 		
-		// Log the client's hostname in case someone's tampering with the site.
-		fwrite($fh, $newError. "\t\t\t". gethostbyaddr($this->getClientIP()). "\n");
-		fclose($fh);
+		if ($fh = fopen($logFile, 'a'))
+		{
+			// Log the client's hostname in case someone's tampering with the site.
+			fwrite($fh, $newError. "\t\t\t". gethostbyaddr($this->getClientIP()). "\n");
+			fclose($fh);
+		}
+		else
+		{
+			throw new Exception('<b>Error:</b> log file isn\'t writeable!');
+		}
 		
 		if ($errorLevel == 2)
 		{
