@@ -58,7 +58,7 @@ class CMSCore extends cmsConfig
 		// Load a database
 		if (isset($this->dbConfig))
 		{
-			if ($this->db = $this->loadClass($this->dbConfig['driver'], 'database/'. $this->underscore($this->dbConfig['driver']))
+			if ($this->db = $this->loadDatabase($this->dbConfig['driver']))
 			{
 				$this->db->options = $this->dbConfig['options'];
 			}
@@ -67,6 +67,17 @@ class CMSCore extends cmsConfig
 				$this->handleError("Database couldn't be loaded.", 2);
 			}
 		}
+	}
+	
+	/**
+	 * Load the database class and return it.
+	 * 
+	 * @return object	newly loaded class
+	 * @access public
+	 **/
+	public function loadDatabase($databaseClass)
+	{
+		return $this->loadClass($databaseClass. 'Database', 'database/'. $this->underscore($databaseClass). '.php');
 	}
 	
 	/**
