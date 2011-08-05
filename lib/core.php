@@ -1,318 +1,376 @@
 <?php
-	require('shared/markdown.php');
-	require('shared/smartypants.php');
+/**
+ * Gir-CMS Core
+ *
+ * The heart of the CMS, the CMS should be able to function simply with this
+ * class, a config and a bootstrap file.
+ *
+ * @package Gir-CMS
+ * @author Jeffory <jeffory@c0d.in>
+ **/
+
+class CMSCore extends cmsConfig
+{
+	/**
+	 * Placeholder for the loaded database
+	 *
+	 * @var object
+	 **/
+	var $db;
 	
-	require('files/config.php');
+	/**
+	 * Debug messages
+	 *
+	 * @var array
+	 **/
+	var $debugMsgs = array();
 	
-	class cms extends cmsConfig
+	/**
+	 * The extension of the file/page being requested
+	 *
+	 * @var string
+	 **/
+	var $requestExt;
+	
+	/**
+	 * Setup timezones, config, cache and database(s).
+	 *
+	 * @return void
+	 **/
+	function __construct()
 	{
-		var $pages = array();
-		var $debugInfo;
+		if (isset($this->defaultTimezone))
+			@date_default_timezone_set($this->defaultTimezone);
 		
-		var $url;
-		var $pageRequest;
-		
-		
-		function __construct()
+		// Check the cache settings
+		if ($this->cacheEnabled === true && empty($this->cacheDir))
 		{
-			$this->addDebug(getcwd());
-			
-			if (isset($cms->defaultTimezone))
-				@date_default_timezone_set($cms->defaultTimezone);
-			
-			// Check the pages directory
-			if (is_dir(realpath($this->pagesDirectory)))
-			{
-				$this->pagesDirectory = realpath($this->pagesDirectory);
-			}
-			else
-			{
-				$this->handleError("Page directory '{$this->pagesDirectory}' not found, CMS can't continue.", 2);
-			}
-			
-			// Check the log file
-			if (is_writable($this->logFile) || is_writable(dirname($this->logFile)))
-			{
-				if (!file_exists($this->logFile))
-				{
-					$fh = fopen($this->logFile, 'w');
-					fwrite($fh, "# Gir CMS error log\n\n");
-					fclose($fh);
-				}
-			}
-			else
-			{
-				$this->handleError("Log file '{$this->logFile}' is not writable, CMS can't continue.", 2);
-			}
-			
-			// Check the cache settings
-			if ($this->cacheEnabled === true && empty($this->cacheDir))
-			{
-				$this->cacheDir = sys_get_temp_dir();
-			}
-			elseif($this->cacheEnabled === true && is_dir(realpath($this->cacheDir)))
-			{
-				$this->cacheDir = realpath($this->cacheDir);
-			}
-			elseif ($this->cacheEnabled === true)
-			{
-				$this->handleError("Cache folder \"{$this->cacheDir}\" doesn't exist, check 'cacheDir' setting.", 0);
-				$this->cacheDir = sys_get_temp_dir();
-			}
-			
-			// Initilize
-			$this->listPages($this->pagesDirectory);
-			
-			// Load additional helpers
-			foreach ($this->loadHelpers as $file => $varName)
-			{
-				include $file. '.php';
-				$varName = $file;
-			}
+			$this->cacheDir = sys_get_temp_dir();
+		}
+		elseif($this->cacheEnabled === true && !is_dir(realpath($this->cacheDir)))
+		{
+			$this->handleError("Cache folder \"{$this->cacheDir}\" doesn't exist, check 'cacheDir' setting.", 0);
+			$this->cacheDir = sys_get_temp_dir();
+		}
+		elseif ($this->cacheEnabled === true)
+		{
+			$this->cacheDir = realpath($this->cacheDir);
 		}
 		
-		function listPages($pagesDirectory)
+		// Load a database
+		if (isset($this->dbConfig))
 		{
-			foreach (scandir($pagesDirectory) as $pageFile)
+			if (!$this->db = $this->loadDatabase($this->dbConfig['driver'], $this->dbConfig['options']))
 			{
-				if ($this->checkPage($pageFile) && !(substr(basename($pageFile), 0, 1) == '.'))
-				{
-					if (is_dir($pagesDirectory. $pageFile))
-					{
-						$this->listPages($pagesDirectory. $pageFile);
-					}
-					else
-					{
-						$pageSlug = $this->getPageSlug($pageFile);
-					
-						$this->pages[$pageSlug]['title'] = $this->getPageTitle($pageFile);
-						$this->pages[$pageSlug]['file'] = $pagesDirectory. DS. $pageFile;
-						$this->pages[$pageSlug]['public'] = $this->isPublic($pagesDirectory. DS. $pageFile);
-					}
-				}
+				$this->handleError("Database couldn't be loaded.", 2);
 			}
 		}
+	}
+	
+	/**
+	 * Load the database class and return it.
+	 * 
+	 * @return object	newly loaded database class
+	 * @access public
+	 **/
+	public function loadDatabase($databaseClass, $databaseOptions = null)
+	{
+		$db = $this->loadClass($databaseClass. 'Database', 'database/'. $this->underscore($databaseClass). '.php');
 		
-		function stripFilename($filename)
+		if (isset($databaseOptions))
 		{
-			// Returns just the filename without extension.
-			return preg_replace('/\.[^.]*$/', '', basename($filename));
+			if (isset($databaseOptions['database']))
+				$db->database = $databaseOptions['database'];
+			if (isset($databaseOptions['extension']))
+				$db->extension = $databaseOptions['extension'];
 		}
 		
-		function getPageSlug($filename)
+		return $db;
+	}
+	
+	/**
+	 * Load the database class and return it.
+	 * 
+	 * @return object	newly loaded renderer class
+	 * @access public
+	 **/
+	public function loadRenderer($rendererClass)
+	{
+		return $this->loadClass($rendererClass. 'Renderer', 'renderer/'. $this->underscore($rendererClass). '.php');
+	}
+	
+	/**
+	 * Load the class and return it.
+	 * 
+	 * @return object	newly loaded class
+	 * @access private
+	 **/
+	private function loadClass($className, $classFile = null)
+	{
+		if (!isset($classFile))
+			$classFile = 'lib/'. $this->underscore($className). '.php';
+		
+		if (require_once $classFile)
 		{
-			// Replace anything that isn't text/numbers into dashes
-			$slug = preg_replace('/[^a-z0-9-]/', '-', strtolower($this->stripFilename($filename)));
-			// Remove excessive dashes
-			$slug = ltrim(preg_replace('/-+/', "-", $slug), '-');
+			return new $className;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	/**
+	 * Returns the given camelCasedWord as an underscored_word.
+	 *
+	 * @param string $camelCasedWord Camel-cased word to be "underscorized"
+	 * @return string Underscore-syntaxed version of the $camelCasedWord
+	 * @access public
+	 **/
+	public static function underscore($camelCasedWord) {
+		return strtolower(preg_replace('/(?<=\\w)([A-Z])/', '_\\1', $camelCasedWord));
+	}
+	
+	/**
+	 * renderPage
+	 *
+	 * @return string	rendered content
+	 * @access public
+	 **/
+	public function renderPage($slug = '', $parseMarkdown = true)
+	{
+		if (!empty($slug))
+		{
+			$this->pageRequest = $slug;
 			
-			return $slug;
-		}
-		
-		function getPageTitle($filename)
-		{
-			// Remove the file extension and replace underscores from the filename
-			return trim(htmlentities(ucwords(str_replace("_", " ", $this->stripFilename($filename)))));
-		}
-		
-		function checkPage($filename)
-		{
-			// TODO: Add blacklist/whitelist filtering function... hidden pages? mmm
-			return true;
-		}
-		
-		function isPublic($filename)
-		{
-			return !(substr(basename($filename), 0, 1) == '_');
-		}
-		
-		function renderPage($slug = '', $parseMarkdown = true)
-		{
-			if (!empty($slug))
+			// TODO: Listing all the pages for every request is wasteful, possibly search for a page?
+			$this->pages = $this->db->listPages($this->pagesDir);
+			
+			if (isset($this->pages[$this->pageRequest]))
 			{
-				$this->pageRequest = $slug;
+				$cacheFile = realpath($this->cacheDir). DS. sha1($this->pageRequest. @$this->ext);
 				
-				if (isset($this->pages[$this->pageRequest]))
+				if ($this->cacheEnabled === true && file_exists($cacheFile) && (filemtime($this->pages[$slug]['file']) < filemtime($cacheFile)))
 				{
-					$cacheFile = realpath($this->cacheDir). DS. sha1($this->pageRequest. @$this->ext);
-					
-					if ($this->cacheEnabled === true && file_exists($cacheFile) && (filemtime($this->pages[$slug]['file']) < filemtime($cacheFile)))
+					$content = file_get_contents($cacheFile);
+				}
+				else
+				{
+					if (isset($this->requestExt) && $this->templates[$this->requestExt])
 					{
-						$content = file_get_contents($cacheFile);
-					}
-					else
-					{
-						// Markdown?
-						if ($parseMarkdown == true)
+						$renderer = $this->loadRenderer($this->templates[$this->requestExt]['renderer']);
+						$content = $renderer->renderContent(file_get_contents($this->pages[$slug]['file']));
+						
+						if ($this->cacheEnabled === true && is_writable($this->cacheDir))
 						{
-							$content = $this->renderContent(file_get_contents($this->pages[$slug]['file']));
-							
-							if ($this->cacheEnabled === true)
-							{
-								if (is_writable($this->cacheDir))
-								{
-									file_put_contents($cacheFile, $content);
-								}
-								else
-								{
-									$this->handleError("File \"{$cacheFile}\" not writable, check 'cacheDir' setting.", 0);
-								}
-							}
+							file_put_contents($cacheFile, $content);
 						}
 						else
 						{
-							$content = file_get_contents($this->pages[$slug]['file']);
+							$this->handleError("File \"{$cacheFile}\" not writable, check 'cacheDir' setting.", 0);
 						}
-					}	
-				}
-				else
-				{
-					if (isset($this->pages['404']))
-					{
-						return $this->renderPage('404');
 					}
 					else
 					{
-						return $this->handleError("Page \"{$slug}\" not found", 1);
+						$content = file_get_contents($this->pages[$slug]['file']);
 					}
-				}
+				}	
 			}
-			return $content;
-		}
-		
-		function renderContent($content)
-		{
-			@$renderer = $this->templates[$this->url['ext']]['renderer'];
-			
-			if (isset($renderer) && @in_array($renderer, array_keys($this->renderers)))
+			else
 			{
-				if (file_exists('lib/'. $this->renderers[$renderer]['file']))
+				if (isset($this->pages['404']))
 				{
-					// TODO: Implement renderers, class is loading, nothing else however.
-					include('lib/'. $this->renderers[$renderer]['file']);
+					return $this->renderPage('404');
 				}
 				else
 				{
-					return $this->handleError("Renderer \"{$renderer}\" couldn't be found, check the config", 2);
+					return $this->handleError("Page \"{$slug}\" not found", 1);
 				}
+			}
+		}
+		return $content;
+	}
+	
+	/**
+	 * Run a PHP snippet and return the result
+	 *
+	 * @return string	rendered/eval'd code
+	 * @access public
+	 **/
+	public function renderPagePart($partName)
+	{
+		$file = $this->dynamicDir. DS. $partName. '.php';
+		
+		if (file_exists($file))
+		{
+			// Run the file, return the output
+			ob_start();
+			include $file;
+			$content = ob_get_contents();
+			ob_end_clean();
+		}
+		else
+		{
+			return $this->handleError("Page \"{$partName}\" not found", 1);
+		}
+		
+		return $content;
+	}
+	
+	/**
+	 * URL parsing
+	 * 
+	 * @var string		the raw url
+	 * @return array	the slug and extension
+	 * @access public
+	 **/
+	public function parseURL($url)
+	{
+		if (!isset($_GET['url']))
+		{
+			$ret['slug'] = 'index';
+			$ret['ext'] = 'html';
+		}
+		else
+		{
+			preg_match_all('/(.*?)(\.|\/|$)(.*?)/is', $url, $matches);
+			
+			$ret['slug'] = $matches[1][0];
+			if (isset($this->templates[$matches[1][1]])) {
+				$ret['ext'] = $matches[1][1];
 			}
 			else
 			{
-				return $this->handleError("Renderer \"{$renderer}\" is invalid, check the config", 2);
+				$ret['ext'] = 'html';
 			}
-			
-			return $content;
 		}
 		
-		function renderPagePart($partName)
+		if ($ret['ext'] == 'html')
 		{
-			$file = $this->dynamicDirectory. DS. $partName. '.php';
-			
-			if (file_exists($file))
-			{
-				// Run the file, return the output
-				ob_start();
-				include $file;
-				$content = ob_get_contents();
-				ob_end_clean();
-			}
-			else
-			{
-				return $this->handleError("Page \"{$partName}\" not found", 1);
-			}
-			
-			return $content;
+			$this->url = $ret['slug'];
+		} else {
+			$this->url = $ret['slug']. '.'. $ret['ext'];
 		}
 		
-		function parseURL($url)
-		{
-			if (!isset($_GET['url']))
-			{
-				$this->url['slug'] = 'index';
-				$this->url['ext'] = 'html';
-			}
-			else
-			{
-				preg_match_all('/(.*?)(\.|\/|$)(.*?)/is', $url, $matches);
-				$this->url['slug'] = $matches[1][0];
-				
-				if (isset($this->templates[$matches[1][1]])) {
-					$this->url['ext'] = $matches[1][1];
-				}
-				else
-				{
-					$this->url['ext'] = 'html';
-				}
-			}
+		return $ret;
+	}
+	
+	/**
+	 * Error handling function
+	 * 
+	 * @var string		the error message
+	 * @var integer		error level, 0: a warning, 1: a standard, 2: a fatal error
+	 * @return string	an error is returned if the error level is less then two
+	 * @access public
+	 **/
+	public function handleError($message, $errorLevel = 0)
+	{
+		$logFile = "files/errors.log";
+		
+		switch ($errorLevel) {
+			case 0:
+				$newError = "Warning:\t". date('r'). "\t\t". $message;
+			break;
 			
-			return $this->url;
+			case 1:
+				$newError = "Error:\t\t". date('r'). "\t\t". $message;
+			break;
+			
+			case 2:
+				$newError = "Fatal Error:\t". date('r'). "\t\t". $message;
+			break;
 		}
 		
-		function handleError($message, $errorLevel = 0)
+		if ($fh = fopen($logFile, 'a'))
 		{
-			// $errorLevel,
-			// 0 - A warning: log to file, don't display.
-			// 1 - An error: display it to the user, however don't halt the script.
-			// 2 - Fatal error: halt the script.
-			
-			$fh = fopen($this->logFile, 'a');
-			
-			switch ($errorLevel) {
-				case 0:
-					$newError = "Warning:\t". date('r'). "\t\t". $message;
-				break;
-				
-				case 1:
-					$newError = "Error:\t\t". date('r'). "\t\t". $message;
-				break;
-				
-				case 2:
-					$newError = "Fatal Error:\t". date('r'). "\t\t". $message;
-				break;
-			}
-			
 			// Log the client's hostname in case someone's tampering with the site.
 			fwrite($fh, $newError. "\t\t\t". gethostbyaddr($this->getClientIP()). "\n");
 			fclose($fh);
-			
-			if ($errorLevel == 2)
-			{
-				die('<b>Error:</b> '. $message);
-			}
-			
-			if ($errorLevel > 0)
-			{
-				return '<b>Error:</b> '. $message;
-			}
+		}
+		else
+		{
+			//throw new Exception('<b>Error:</b> log file isn\'t writeable!');
 		}
 		
-		function getClientIP()
+		if ($errorLevel == 2)
 		{
-			// Check HTTP_CLIENT_IP and HTTP_X_FORWARDED_FOR for an IP otherwise fallback to REMOTE_ADDR
-			return !empty($_SERVER['HTTP_CLIENT_IP']) ? $_SERVER['HTTP_CLIENT_IP'] : 
-				!empty($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : 
-					$_SERVER['REMOTE_ADDR'];
+			die('<b>Error:</b> '. $message);
 		}
 		
-		function addDebug($line)
+		if ($errorLevel > 0)
 		{
-			$this->debugInfo .= $line. "<br>";
-		}
-		
-		function printDebug()
-		{
-			echo "<span class='big'><strong>Debug</strong></span><br><br>";
-			echo $this->debugInfo. '<br><br>';
-			echo '<strong>Files loaded:</strong>'. '<br><br>';
-			
-			echo '<ul>';
-			
-			foreach (get_included_files() as $file)
-			{
-				echo '<li>'. str_replace(getcwd(). DS, '', $file). '</li>';
-			}
-			
-			echo '</ul><br>';
-			htmlentities(print_r($this));
+			return '<b>Error:</b> '. $message;
 		}
 	}
+	
+	/**
+	 * Attempt to get the clients IP even if they are behind some sort of proxy
+	 * 
+	 * @return string	the clients IP address
+	 * @access public
+	 **/
+	public static function getClientIP()
+	{
+		// Check HTTP_CLIENT_IP and HTTP_X_FORWARDED_FOR for an IP otherwise fallback to REMOTE_ADDR
+		return !empty($_SERVER['HTTP_CLIENT_IP']) ? $_SERVER['HTTP_CLIENT_IP'] : 
+			!empty($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : 
+				$_SERVER['REMOTE_ADDR'];
+	}
+	
+	/**
+	 * Return any important debugging information
+	 * 
+	 * @var	debug message
+	 * @return void
+	 * @access public
+	 **/
+	public function msgDebug($message)
+	{
+		if ($message)
+		{
+			$this->debugMsgs[] = $message;
+		}
+	}
+	
+	/**
+	 * Return any important debugging information
+	 * 
+	 * @return string	debugging info
+	 * @access public
+	 **/
+	public function showDebug()
+	{
+		$debugData = '<div id="debug"><h2>Debug</h2>';
+		$debugData .= '<h3>Log:</h3>';
+		
+		if (!empty($this->debugMsgs))
+		{
+			echo '<ul>';
+			foreach ($this->debugMsgs as $debugMsg)
+			{
+				$debugData .= '<li>'. $debugMsg. '</li>';
+			}
+			echo '</ul>';
+		}
+		
+		$debugData .= '<h3>Included files:</h3><ul>';
+		
+		foreach(get_included_files() as $file)
+		{
+			if (defined('CMS_PATH'))
+			{
+				$debugData .= '<li>'. str_replace(CMS_PATH. '\\', '', $file). '</li>';
+			}
+			else
+			{
+				$debugData .= '<li>'. $file. '</li>';
+			}
+		}
+		
+		$debugData .= '</ul><br>';
+		$debugData .= print_r($this, true);
+		$debugData .= '</div>';
+		
+		return $debugData;
+	}
+}
