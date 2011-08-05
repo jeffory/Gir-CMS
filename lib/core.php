@@ -40,9 +40,7 @@ class CMSCore extends cmsConfig
 	function __construct()
 	{
 		if (isset($this->defaultTimezone))
-		{
 			@date_default_timezone_set($this->defaultTimezone);
-		}
 		
 		// Check the cache settings
 		if ($this->cacheEnabled === true && empty($this->cacheDir))

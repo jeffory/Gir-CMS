@@ -42,7 +42,6 @@ class PlaintextDatabase
 		// Check the pages directory is available
 		if (!is_dir(realpath($this->database)))
 			$parent->handleError("Page directory '{$this->database}' not found, CMS can't continue.", 2);
-		}
 	}	
 	
 	/**
