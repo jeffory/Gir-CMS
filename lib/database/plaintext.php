@@ -11,13 +11,26 @@
 class PlaintextDatabase
 {
 	/**
+	 * pages folder location
+	 *
+	 * @var string
+	 **/
+	var $database;
+	
+	/**
 	 * list of pages
 	 *
 	 * @var array
 	 **/
 	var $pages = array();
 	
-	var $options = array();
+	/**
+	 * page extension
+	 *
+	 * @var string
+	 **/
+	var $extension = array();
+	
 	
 	/**
 	 * Returns an array with the pages and their properties.
@@ -26,8 +39,10 @@ class PlaintextDatabase
 	 * @return array
 	 * @access public
 	 **/
-	public function listPages($pagesDirectory)
+	public function listPages()
 	{
+		$pagesDirectory = $this->database;
+		
 		foreach (scandir($pagesDirectory) as $pageFile)
 		{
 			if ($this->checkPage($pageFile) && $pageFile !== '.' && $pageFile !== '..')
@@ -41,7 +56,7 @@ class PlaintextDatabase
 					$pageSlug = $this->getPageSlug($pageFile);
 					
 					$this->pages[$pageSlug]['title'] = $this->getPageTitle($pageFile);
-					$this->pages[$pageSlug]['file'] = $pagesDirectory. DS. $pageFile;
+					$this->pages[$pageSlug]['file'] = realpath($pagesDirectory. DS. $pageFile);
 					$this->pages[$pageSlug]['public'] = $this->isPublic($pagesDirectory. DS. $pageFile);
 				}
 			}
