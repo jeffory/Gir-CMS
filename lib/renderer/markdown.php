@@ -24,7 +24,7 @@ class MarkdownRenderer
 		$markdownParser = new MarkdownExtra_Parser;
 		
 		$renderFixes = array(
-					'/^(#+)/m' => '$1#',	// Take the headings down a step, H1 is the main website heading :)
+					'/^(#+)/m' => '$1#',	// Take the headings down a step, as H1 is usually the main website heading
 					'/<(\/|)s>/m' => '<$1del>',
 				);
 		
