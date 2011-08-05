@@ -72,11 +72,7 @@ class CMSCore extends cmsConfig
 		// Load a database
 		if (isset($this->dbConfig))
 		{
-			if ($this->db = $this->loadDatabase($this->dbConfig['driver']))
-			{
-				$this->db->options = $this->dbConfig['options'];
-			}
-			else
+			if (!$this->db = $this->loadDatabase($this->dbConfig['driver'], $this->dbConfig['options']))
 			{
 				$this->handleError("Database couldn't be loaded.", 2);
 			}
@@ -89,9 +85,19 @@ class CMSCore extends cmsConfig
 	 * @return object	newly loaded database class
 	 * @access public
 	 **/
-	public function loadDatabase($databaseClass)
+	public function loadDatabase($databaseClass, $databaseOptions = null)
 	{
-		return $this->loadClass($databaseClass. 'Database', 'database/'. $this->underscore($databaseClass). '.php');
+		$db = $this->loadClass($databaseClass. 'Database', 'database/'. $this->underscore($databaseClass). '.php');
+		
+		if (isset($databaseOptions))
+		{
+			if (isset($databaseOptions['database']))
+				$db->database = $databaseOptions['database'];
+			if (isset($databaseOptions['extension']))
+				$db->extension = $databaseOptions['extension'];
+		}
+		
+		return $db;
 	}
 	
 	/**
@@ -134,9 +140,7 @@ class CMSCore extends cmsConfig
 	 * @access public
 	 **/
 	public static function underscore($camelCasedWord) {
-		$result = strtolower(preg_replace('/(?<=\\w)([A-Z])/', '_\\1', $camelCasedWord));
-		
-		return $result;
+		return strtolower(preg_replace('/(?<=\\w)([A-Z])/', '_\\1', $camelCasedWord));
 	}
 	
 	/**
@@ -151,7 +155,7 @@ class CMSCore extends cmsConfig
 		{
 			$this->pageRequest = $slug;
 			
-			// TODO: Listing all the pages for every request is wasteful, search for a page.
+			// TODO: Listing all the pages for every request is wasteful, possibly search for a page?
 			$this->pages = $this->db->listPages($this->pagesDir);
 			
 			if (isset($this->pages[$this->pageRequest]))
@@ -334,7 +338,10 @@ class CMSCore extends cmsConfig
 	 **/
 	public function msgDebug($message)
 	{
-		$this->debugMsgs[] = $message;
+		if ($message)
+		{
+			$this->debugMsgs[] = $message;
+		}
 	}
 	
 	/**
