@@ -1,3 +1,6 @@
+# This file is wholely and solely for using the app on pagodabox.com
+# it may be deleted.
+
 document_root: /files
 php_date_timezone: Australia/Brisbane
 shared_writable_dirs: /cache
