@@ -1,0 +1,3 @@
+Unless you don't want a cache...
+
+(Change $cacheEnabled in files/config.php to false if this is the case.)
