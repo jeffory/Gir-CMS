@@ -167,30 +167,15 @@ class CMSCore extends cmsConfig
 					if (isset($this->requestExt) && $this->templates[$this->requestExt])
 					{
 						$renderer = $this->loadRenderer($this->templates[$this->requestExt]['renderer']);
-						
 						$content = $renderer->renderContent(file_get_contents($this->pages[$slug]['file']));
-					}
-					else
-					{
-						$content = file_get_contents($this->pages[$slug]['file']);
-					}
-					
-					
-					// Markdown?
-					if ($parseMarkdown == true)
-					{
-						//$content = $this->renderContent(file_get_contents($this->pages[$slug]['file']));
 						
-						if ($this->cacheEnabled === true)
+						if ($this->cacheEnabled === true && is_writable($this->cacheDir))
 						{
-							if (is_writable($this->cacheDir))
-							{
-								file_put_contents($cacheFile, $content);
-							}
-							else
-							{
-								$this->handleError("File \"{$cacheFile}\" not writable, check 'cacheDir' setting.", 0);
-							}
+							file_put_contents($cacheFile, $content);
+						}
+						else
+						{
+							$this->handleError("File \"{$cacheFile}\" not writable, check 'cacheDir' setting.", 0);
 						}
 					}
 					else
