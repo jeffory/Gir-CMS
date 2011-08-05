@@ -13,18 +13,12 @@ $cms = new CMSCore();
 
 // Divide the url into parts
 $url = $cms->parseURL(@$_GET['url']);
+$cms->requestExt = $url['ext'];
 
 // Render the content
 if (@!in_array($url['slug'], $cms->dynamicPages))
 {
-	if (isset($cms->templates[$url['ext']]['markdown']) && $cms->templates[$url['ext']]['markdown'] === true)
-	{
-		$pageContent = $cms->renderPage($url['slug']);
-	}
-	else
-	{
-		$pageContent = $cms->renderPage($url['slug'], false);
-	}
+	$pageContent = $cms->renderPage($url['slug']);
 }
 else
 {

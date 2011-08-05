@@ -19,6 +19,20 @@ class CMSCore extends cmsConfig
 	var $db;
 	
 	/**
+	 * Debug messages
+	 *
+	 * @var array
+	 **/
+	var $debugMsgs = array();
+	
+	/**
+	 * The extension of the file/page being requested
+	 *
+	 * @var string
+	 **/
+	var $requestExt;
+	
+	/**
 	 * Setup timezones, config, cache and database(s).
 	 *
 	 * @return void
@@ -72,7 +86,7 @@ class CMSCore extends cmsConfig
 	/**
 	 * Load the database class and return it.
 	 * 
-	 * @return object	newly loaded class
+	 * @return object	newly loaded database class
 	 * @access public
 	 **/
 	public function loadDatabase($databaseClass)
@@ -81,17 +95,28 @@ class CMSCore extends cmsConfig
 	}
 	
 	/**
+	 * Load the database class and return it.
+	 * 
+	 * @return object	newly loaded renderer class
+	 * @access public
+	 **/
+	public function loadRenderer($rendererClass)
+	{
+		return $this->loadClass($rendererClass. 'Renderer', 'renderer/'. $this->underscore($rendererClass). '.php');
+	}
+	
+	/**
 	 * Load the class and return it.
 	 * 
 	 * @return object	newly loaded class
-	 * @access public
+	 * @access private
 	 **/
-	public function loadClass($className, $classFile = null)
+	private function loadClass($className, $classFile = null)
 	{
 		if (!isset($classFile))
 			$classFile = 'lib/'. $this->underscore($className). '.php';
 		
-		if (require $classFile)
+		if (require_once $classFile)
 		{
 			return new $className;
 		}
@@ -126,6 +151,9 @@ class CMSCore extends cmsConfig
 		{
 			$this->pageRequest = $slug;
 			
+			// TODO: Listing all the pages for every request is wasteful, search for a page.
+			$this->pages = $this->db->listPages($this->pagesDir);
+			
 			if (isset($this->pages[$this->pageRequest]))
 			{
 				$cacheFile = realpath($this->cacheDir). DS. sha1($this->pageRequest. @$this->ext);
@@ -136,10 +164,22 @@ class CMSCore extends cmsConfig
 				}
 				else
 				{
+					if (isset($this->requestExt) && $this->templates[$this->requestExt])
+					{
+						$renderer = $this->loadRenderer($this->templates[$this->requestExt]['renderer']);
+						
+						$content = $renderer->renderContent(file_get_contents($this->pages[$slug]['file']));
+					}
+					else
+					{
+						$content = file_get_contents($this->pages[$slug]['file']);
+					}
+					
+					
 					// Markdown?
 					if ($parseMarkdown == true)
 					{
-						$content = $this->renderContent(file_get_contents($this->pages[$slug]['file']));
+						//$content = $this->renderContent(file_get_contents($this->pages[$slug]['file']));
 						
 						if ($this->cacheEnabled === true)
 						{
@@ -171,21 +211,6 @@ class CMSCore extends cmsConfig
 				}
 			}
 		}
-		return $content;
-	}
-	
-	/**
-	 * Render some content
-	 *
-	 * @return string	rendered page content
-	 * @access public
-	 **/
-	public function renderContent($content)
-	{
-		$markdown = $this->loadClass('MarkdownRenderer');
-		
-		$content = MarkdownRenderer::renderContent($content);
-		
 		return $content;
 	}
 	
@@ -312,6 +337,18 @@ class CMSCore extends cmsConfig
 	/**
 	 * Return any important debugging information
 	 * 
+	 * @var	debug message
+	 * @return void
+	 * @access public
+	 **/
+	public function msgDebug($message)
+	{
+		$this->debugMsgs[] = $message;
+	}
+	
+	/**
+	 * Return any important debugging information
+	 * 
 	 * @return string	debugging info
 	 * @access public
 	 **/
@@ -319,6 +356,17 @@ class CMSCore extends cmsConfig
 	{
 		$debugData = '<div id="debug"><h2>Debug</h2>';
 		$debugData .= '<h3>Log:</h3>';
+		
+		if (!empty($this->debugMsgs))
+		{
+			echo '<ul>';
+			foreach ($this->debugMsgs as $debugMsg)
+			{
+				$debugData .= '<li>'. $debugMsg. '</li>';
+			}
+			echo '</ul>';
+		}
+		
 		$debugData .= '<h3>Included files:</h3><ul>';
 		
 		foreach(get_included_files() as $file)

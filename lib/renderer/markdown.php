@@ -8,8 +8,8 @@
  * @author Jeffory <jeffory@c0d.in>
  **/
 
-require('shared/markdown.php');
-require('shared/smartypants.php');
+require('lib/shared/markdown.php');
+require('lib/shared/smartypants.php');
  
 class MarkdownRenderer
 {	
