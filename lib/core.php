@@ -58,7 +58,7 @@ class CMSCore extends cmsConfig
 		// Load a database
 		if (isset($this->dbConfig))
 		{
-			if ($this->db = $this->loadClass($this->dbConfig['driver']))
+			if ($this->db = $this->loadClass($this->dbConfig['driver'], 'database/'. $this->underscore($this->dbConfig['driver']))
 			{
 				$this->db->options = $this->dbConfig['options'];
 			}

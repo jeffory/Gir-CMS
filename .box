@@ -1,4 +1,3 @@
 document_root: /files
 php_date_timezone: Australia/Brisbane
-default_gateway: index.php
 shared_writable_dirs: /cache

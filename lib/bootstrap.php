@@ -11,10 +11,10 @@ define('CMS_PATH', realpath('.'));
 
 $cms = new CMSCore();
 
-// divide the url into parts
+// Divide the url into parts
 $url = $cms->parseURL(@$_GET['url']);
 
-// render the content
+// Render the content
 if (@!in_array($url['slug'], $cms->dynamicPages))
 {
 	if (isset($cms->templates[$url['ext']]['markdown']) && $cms->templates[$url['ext']]['markdown'] === true)
@@ -31,7 +31,7 @@ else
 	$pageContent = $cms->renderPagePart($url['slug']);
 }
 
-// display content using template
+// Display content using template
 if (isset($cms->templates[$url['ext']]))
 {
 	if (isset($cms->templates[$url['ext']]['content-type']))

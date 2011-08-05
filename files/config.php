@@ -17,7 +17,7 @@ class cmsConfig
 	var $defaultTimezone = 'Australia/Brisbane';
 	
 	var $dbConfig = array(
-			'driver' => 'PlaintextDatabase',
+			'driver' => 'Plaintext',
 			'options' => array(
 				'database' => 'files/pages',
 				'extension' => 'txt'
@@ -44,7 +44,7 @@ class cmsConfig
 		'html' => array(
 			'template' => 'html.php',
 			'content-type' => 'text/html',
-			'renderer' => 'markdown'
+			'renderer' => 'Markdown'
 			),
 		'txt' => array(
 			'template' => 'txt.php',
