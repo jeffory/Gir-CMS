@@ -32,7 +32,9 @@ class cmsConfig
 	// Where the dynamic (php) pages are stored.
 	var $dynamicDir = 'files/snips';
 	
-	var $dynamicPages = array();
+	var $dynamicPages = array(
+		'test'
+		);
 	
 	var $cacheEnabled = true;
 	
