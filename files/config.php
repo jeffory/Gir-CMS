@@ -24,11 +24,6 @@ class cmsConfig
 				)
 			);
 	
-	// Where the pages are stored.
-	var $pagesDir = 'files/pages';
-	
-	var $pagesExtension = 'txt';
-	
 	// Where the dynamic (php) pages are stored.
 	var $dynamicDir = 'files/snips';
 	
