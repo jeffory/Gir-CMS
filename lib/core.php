@@ -44,16 +44,6 @@ class CMSCore extends cmsConfig
 			@date_default_timezone_set($this->defaultTimezone);
 		}
 		
-		// Check the pages directory is avaliable
-		if (is_dir(realpath($this->pagesDir)))
-		{
-			$this->pagesDir = realpath($this->pagesDir);
-		}
-		else
-		{
-			$this->handleError("Page directory '{$this->pagesDir}' not found, CMS can't continue.", 2);
-		}
-		
 		// Check the cache settings
 		if ($this->cacheEnabled === true && empty($this->cacheDir))
 		{
