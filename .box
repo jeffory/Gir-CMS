@@ -1,0 +1,3 @@
+php_date_timezone: Australia/Brisbane
+default_gateway: files/index.php
+shared_writable_dirs: /cache
