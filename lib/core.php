@@ -312,7 +312,7 @@ class CMSCore extends cmsConfig
 		}
 		else
 		{
-			throw new Exception('<b>Error:</b> log file isn\'t writeable!');
+			//throw new Exception('<b>Error:</b> log file isn\'t writeable!');
 		}
 		
 		if ($errorLevel == 2)
