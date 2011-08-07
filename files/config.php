@@ -37,6 +37,8 @@ class cmsConfig
 	
 	var $layoutDir = 'files/layout';
 	
+	var $logDir = 'files';
+
 	var $templates = array(
 		'html' => array(
 			'template' => 'html.php',

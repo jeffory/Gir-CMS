@@ -57,6 +57,12 @@ class CMSCore extends cmsConfig
 			$this->cacheDir = realpath($this->cacheDir);
 		}
 		
+		// Check the base URL
+		$this->siteURL = isset($_SERVER['BASE_URL']) ? $_SERVER['BASE_URL'] : $this->siteURL;
+
+		// Check the log dir
+		$this->logDir = isset($_SERVER['LOG_DIR']) ? $_SERVER['LOG_DIR'] : $this->logDir;
+		
 		// Load a database
 		if (isset($this->dbConfig))
 		{
@@ -144,7 +150,7 @@ class CMSCore extends cmsConfig
 			$this->pageRequest = $slug;
 			
 			// TODO: Listing all the pages for every request is wasteful, possibly search for a page?
-			$this->pages = $this->db->listPages($this->pagesDir);
+			$this->pages = $this->db->listPages();
 			
 			if (isset($this->pages[$this->pageRequest]))
 			{
@@ -265,7 +271,7 @@ class CMSCore extends cmsConfig
 	 **/
 	public function handleError($message, $errorLevel = 0)
 	{
-		$logFile = "files/errors.log";
+		$logFile = $this->logDir. "errors.log";
 		
 		switch ($errorLevel) {
 			case 0:
