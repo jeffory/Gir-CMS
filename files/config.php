@@ -10,7 +10,7 @@ class cmsConfig
 {
 	var $siteTitle = 'Gir CMS';
 	
-	var $siteURL = 'http://localhost/gircms/';
+	var $siteURL = 'http://localhost/gircms';
 	
 	var $debug = true;
 	

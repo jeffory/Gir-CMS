@@ -271,7 +271,7 @@ class CMSCore extends cmsConfig
 	 **/
 	public function handleError($message, $errorLevel = 0)
 	{
-		$logFile = $this->logDir. "errors.log";
+		$logFile = $this->logDir. "/errors.log";
 		
 		switch ($errorLevel) {
 			case 0:
