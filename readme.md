@@ -23,9 +23,10 @@ are writable.
 
 3. Check/Change RewriteBase in the root **.htaccess** file.
 
-4. Setup or delete the favicon in **files/extras**.
+4. Setup or delete the favicon(s) in **files/extras**.
 
 5. Setup or delete the humans.txt and robots.txt in **files/extras**.
 
+6. Go to the address you uploaded it to and it should now be working. Enjoy :)
 
 [html5boilerplate]: http://html5boilerplate.com
