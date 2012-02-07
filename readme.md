@@ -31,16 +31,17 @@ are writable.
 
 ## nginx support
 
-Although I haven't tested it throughly you can get Gir-CMS working by adding the following files to the nginx.conf:
+Although it hasn't been tested throughly Gir-CMS seems to work on [nginx][nginx] by adding the following lines to the nginx.conf:
 
-  location / {
-      root   html/files/;
-      index  index.php;
-      
-      if (!-e $request_filename) {
-          rewrite  ^/(.*)$ index.php?url=$1  last;
-          break;
-      }
-  }
+    location / {
+        root   html/files/;
+        index  index.php;
+        
+        if (!-e $request_filename) {
+            rewrite  ^/(.*)$ index.php?url=$1  last;
+            break;
+        }
+    }
 
 [html5boilerplate]: http://html5boilerplate.com
+[nginx]: http://nginx.org
