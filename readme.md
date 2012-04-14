@@ -9,6 +9,10 @@ While [HTML5 Boilerplate][html5boilerplate] is the basis for the template the
 project is designed to be dynamic enough to (with a little effort) serve most
 text based formats. You are also able to code in any standards you want.
 
+*There is another apparently open source project that has been brought to my
+attention with the same name: [gir-cms.com](http://gir-cms.com/) (Site's in
+Russian)*
+
 ## Requirements
 
 * Apache 2.2+ w/mod_rewrite
