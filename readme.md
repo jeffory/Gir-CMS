@@ -1,23 +1,16 @@
 # Gir CMS
 
 Gir CMS aims to be as lightweight and easy as possible while still maintaining a
-certain amount of extensibility. It is named after the Invader Zim character
-because of the authors obsessiveness with both the cartoon character and this
-project.
+certain amount of extensibility.
 
 While [HTML5 Boilerplate][html5boilerplate] is the basis for the template the
 project is designed to be dynamic enough to (with a little effort) serve most
 text based formats. You are also able to code in any standards you want.
 
-**There is another apparently open source project that has been brought to my
-attention with the same name: [gir-cms.com](http://gir-cms.com/) (Site's in
-Russian, I have nothing to do with it). I may change the name of the project
-in the future because of this.**
-
 ## Requirements
 
 * Apache 2.2+ w/mod_rewrite
-* PHP 5+
+* PHP 5.1+
 
 ## Installation
 
